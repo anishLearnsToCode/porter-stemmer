@@ -97,11 +97,11 @@ class PorterStemmer:
             i += 1
 
     def contains_vowel(self):
-        """vowelinstem() is TRUE <=> k0,...j contains a vowel"""
+        """:returns TRUE if the word contains a vowel in the range [start, offset]"""
         for i in range(self.start, self.offset + 1):
             if not self.is_consonant(i):
-                return 1
-        return 0
+                return True
+        return False
 
     def contains_double_consonant(self, j):
         """doublec(j) is TRUE <=> j,(j-1) contain a double consonant."""
