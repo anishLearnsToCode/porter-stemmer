@@ -60,7 +60,7 @@ class PorterStemmer:
         return True
 
     def m(self):
-        """m() measures the number of consonant sequences between k0 and j.
+        """m() measures the number of consonant sequences between start and offset.
         if c is a consonant sequence and v a vowel sequence, and <..>
         indicates arbitrary presence,
 
@@ -72,29 +72,29 @@ class PorterStemmer:
         """
         n = 0
         i = self.start
-        while 1:
+        while True:
             if i > self.offset:
                 return n
             if not self.is_consonant(i):
                 break
-            i = i + 1
-        i = i + 1
-        while 1:
-            while 1:
+            i += 1
+        i += 1
+        while True:
+            while True:
                 if i > self.offset:
                     return n
                 if self.is_consonant(i):
                     break
-                i = i + 1
-            i = i + 1
-            n = n + 1
-            while 1:
+                i += 1
+            i += 1
+            n += 1
+            while True:
                 if i > self.offset:
                     return n
                 if not self.is_consonant(i):
                     break
-                i = i + 1
-            i = i + 1
+                i += 1
+            i += 1
 
     def contains_vowel(self):
         """vowelinstem() is TRUE <=> k0,...j contains a vowel"""
