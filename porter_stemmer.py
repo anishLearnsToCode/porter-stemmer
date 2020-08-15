@@ -398,5 +398,5 @@ class PorterStemmer:
 if __name__ == '__main__':
     stemmer = PorterStemmer()
     resume = open('resume.txt', 'r').read()
-    # print(stemmer.stem_sentence('important links dogs cats and bears are wild animated'))
+    print(stemmer.stem_sentence('The quick brown fox jumps over the lazy dog'))
     print(stemmer.stem_document(resume))
