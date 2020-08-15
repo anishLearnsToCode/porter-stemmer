@@ -361,10 +361,3 @@ class PorterStemmer:
         self.step4()
         self.step5()
         return self.word[self.start: self.end + 1]
-
-
-if __name__ == '__main__':
-    stemmer = PorterStemmer()
-    resume = open('do-not-go-gentle-into-that-good-night.txt', 'r').read()
-    # print(stemmer.stem_sentence('so many cats and dogs'))
-    print(stemmer.stem_document(resume))
