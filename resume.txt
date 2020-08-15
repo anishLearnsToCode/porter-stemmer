@@ -1,0 +1,58 @@
+Anish Sachdeva
+Software Developer + Clean Code Enthusiast
+
+Phone: 8287428181
+email: anish_@outlook.com
+home: sandesh vihar, pitampura, new delhi - 110034
+date of birth: 7th April 1998
+languages: English, Hindi, French
+
+Work Experience
+What After College (4 months)
+Delhi, India
+Creating content to teach Core Java and Python with Data Structures and Algorithms and giving online classes to students.
+
+Summer Research Fellow at University of Auckland (2 Months)
+Auckland, New Zealand
+Worked on Geometry of Mobius Transformations, Differential Grometry under Dr. Pedram Hekmati at the Department of Mathematics, University of Auckland.
+
+Software Developer at CERN (14 Months)
+CERN, Geneva, Switzerland
+Worked in the core Platforms team of the FAP-BC group. Part of an agile team of developers that maintains and adds core functionality to applications used internally at CERN by HR, Financial, Administrative and other departments including Scientific.
+Worked on legacy applications that comprise of single and some times multiple frameworks such as Java Spring, Boot, Hibernate and Java EE. Also worked with Google Polymer 1.0 and JSP on the client side.
+Maintained CERN's Electronic Document Handing System application with >1M LOC that comprising of multiple frameworks and created ~20 years ago. Worked on feature requests, support requests and incidents and also release cycles.
+
+Teaching Assistant (4 Months)
+Coding Ninjas, Delhi
+Served as the teaching assistant to Nucleus - Java with DS batch, under Mr. Ankur Kumar. Worked on creating course content and quizzes for online platform of Coding Ninjas for Java. Helped students in core Data Structures and Algorithms concepts in Java.
+
+Education
+Delhi Technological University (2016 - 2021)
+Bachelors of Technology Mathematics and Computing
+CGPA: 9.2
+
+The Heritage School Rohini (2004 - 2016)
+Physics, Chemistry, Maths + Computer Science with English
+Senior Secondary: 94.8%
+Secondary: 9.8 CGPA
+
+Technical Skills
+Java + Algorithms and Data Structures
+MEAN Stack Web Development
+Python + Machine Learning
+MATLAB + Octave
+MySQL, PostgresSQL & MongoDB
+
+Other Skills
+MS Office, Adobe Photoshop, LaTeX + MiTeX
+
+University Courses
+Applied Mathematics I, II, III
+Linear Algebra + Probability & Statistics + Stochastic Processes + Discrete Maths
+Computer Organization & Architecture + Data Structures + Algorithm Design and Analysis + DBMS + OS
+Computer Vision + NLP
+
+Important Links
+https://www.linkedin.com/in/anishsachdeva1998/
+https://github.com/anishLearnsToCode
+https://www.hackerrank.com/anishviewer
