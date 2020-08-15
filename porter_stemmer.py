@@ -36,30 +36,28 @@ class PorterStemmer:
 
     def __init__(self):
         """The main part of the stemming algorithm starts here.
-        b is a buffer holding a word to be stemmed. The letters are in b[k0],
-        b[k0+1] ... ending at b[k]. In fact k0 = 0 in this demo program. k is
-        readjusted downwards as the stemming progresses. Zero termination is
-        not in fact used in the algorithm.
-
-        Note that only lower case sequences are stemmed. Forcing to lower case
-        should be done before stem(...) is called.
+        word is a buffer holding a word to be stemmed. The letters are in the range
+        [start, offset ... offset + 1) ... ending at end.
         """
+        self.vowels = ('a', 'e', 'i', 'o', 'u')
+        self.word = ''
+        self.end = 0
+        self.start = 0
+        self.offset = 0
 
-        self.b = ""  # buffer for word to be stemmed
-        self.k = 0
-        self.k0 = 0
-        self.j = 0  # j is a general offset into the string
+    def is_vowel(self, letter):
+        return letter in self.vowels
 
-    def is_consonant(self, i):
+    def is_consonant(self, index):
         """cons(i) is TRUE <=> b[i] is a consonant."""
-        if self.b[i] == 'a' or self.b[i] == 'e' or self.b[i] == 'i' or self.b[i] == 'o' or self.b[i] == 'u':
-            return 0
-        if self.b[i] == 'y':
-            if i == self.k0:
-                return 1
+        if self.is_vowel(self.word[index]):
+            return False
+        if self.word[index] == 'y':
+            if index == self.start:
+                return True
             else:
-                return (not self.is_consonant(i - 1))
-        return 1
+                return not self.is_consonant(index - 1)
+        return True
 
     def m(self):
         """m() measures the number of consonant sequences between k0 and j.
@@ -73,9 +71,9 @@ class PorterStemmer:
            ....
         """
         n = 0
-        i = self.k0
+        i = self.start
         while 1:
-            if i > self.j:
+            if i > self.offset:
                 return n
             if not self.is_consonant(i):
                 break
@@ -83,7 +81,7 @@ class PorterStemmer:
         i = i + 1
         while 1:
             while 1:
-                if i > self.j:
+                if i > self.offset:
                     return n
                 if self.is_consonant(i):
                     break
@@ -91,7 +89,7 @@ class PorterStemmer:
             i = i + 1
             n = n + 1
             while 1:
-                if i > self.j:
+                if i > self.offset:
                     return n
                 if not self.is_consonant(i):
                     break
@@ -100,16 +98,16 @@ class PorterStemmer:
 
     def contains_vowel(self):
         """vowelinstem() is TRUE <=> k0,...j contains a vowel"""
-        for i in range(self.k0, self.j + 1):
+        for i in range(self.start, self.offset + 1):
             if not self.is_consonant(i):
                 return 1
         return 0
 
     def contains_double_consonant(self, j):
         """doublec(j) is TRUE <=> j,(j-1) contain a double consonant."""
-        if j < (self.k0 + 1):
+        if j < (self.start + 1):
             return 0
-        if (self.b[j] != self.b[j - 1]):
+        if (self.word[j] != self.word[j - 1]):
             return 0
         return self.is_consonant(j)
 
@@ -121,9 +119,9 @@ class PorterStemmer:
            cav(e), lov(e), hop(e), crim(e), but
            snow, box, tray.
         """
-        if i < (self.k0 + 2) or not self.is_consonant(i) or self.is_consonant(i - 1) or not self.is_consonant(i - 2):
+        if i < (self.start + 2) or not self.is_consonant(i) or self.is_consonant(i - 1) or not self.is_consonant(i - 2):
             return 0
-        ch = self.b[i]
+        ch = self.word[i]
         if ch == 'w' or ch == 'x' or ch == 'y':
             return 0
         return 1
@@ -131,20 +129,20 @@ class PorterStemmer:
     def ends(self, s):
         """ends(s) is TRUE <=> k0,...k ends with the string s."""
         length = len(s)
-        if s[length - 1] != self.b[self.k]:  # tiny speed-up
+        if s[length - 1] != self.word[self.end]:  # tiny speed-up
             return 0
-        if length > (self.k - self.k0 + 1):
+        if length > (self.end - self.start + 1):
             return 0
-        if self.b[self.k - length + 1: self.k + 1] != s:
+        if self.word[self.end - length + 1: self.end + 1] != s:
             return 0
-        self.j = self.k - length
+        self.offset = self.end - length
         return 1
 
     def set_to(self, s):
         """setto(s) sets (j+1),...k to the characters in the string s, readjusting k."""
         length = len(s)
-        self.b = self.b[:self.j + 1] + s + self.b[self.j + length + 1:]
-        self.k = self.j + length
+        self.word = self.word[:self.offset + 1] + s + self.word[self.offset + length + 1:]
+        self.end = self.offset + length
 
     def r(self, s):
         """r(s) is used further down. is a mapping function to change morphemes"""
@@ -172,55 +170,55 @@ class PorterStemmer:
 
            meetings  ->  meet
         """
-        if self.b[self.k] == 's':
+        if self.word[self.end] == 's':
             if self.ends("sses"):
-                self.k = self.k - 2
+                self.end = self.end - 2
             elif self.ends("ies"):
                 self.set_to("i")
-            elif self.b[self.k - 1] != 's':
-                self.k = self.k - 1
+            elif self.word[self.end - 1] != 's':
+                self.end = self.end - 1
         if self.ends("eed"):
             if self.m() > 0:
-                self.k = self.k - 1
+                self.end = self.end - 1
         elif (self.ends("ed") or self.ends("ing")) and self.contains_vowel():
-            self.k = self.j
+            self.end = self.offset
             if self.ends("at"):
                 self.set_to("ate")
             elif self.ends("bl"):
                 self.set_to("ble")
             elif self.ends("iz"):
                 self.set_to("ize")
-            elif self.contains_double_consonant(self.k):
-                self.k = self.k - 1
-                ch = self.b[self.k]
+            elif self.contains_double_consonant(self.end):
+                self.end = self.end - 1
+                ch = self.word[self.end]
                 if ch == 'l' or ch == 's' or ch == 'z':
-                    self.k = self.k + 1
-            elif self.m() == 1 and self.is_of_form_cvc(self.k):
+                    self.end = self.end + 1
+            elif self.m() == 1 and self.is_of_form_cvc(self.end):
                 self.set_to("e")
 
     def terminal_y_to_i(self):
         """step1c() turns terminal y to i when there is another vowel in the stem."""
         if self.ends('y') and self.contains_vowel():
-            self.b = self.b[:self.k] + 'i' + self.b[self.k + 1:]
+            self.word = self.word[:self.end] + 'i' + self.word[self.end + 1:]
 
     def map_double_to_single_suffix(self):
         """step2() maps double suffices to single ones.
         so -ization ( = -ize plus -ation) maps to -ize etc. note that the
         string before the suffix must give m() > 0.
         """
-        if self.b[self.k - 1] == 'a':
+        if self.word[self.end - 1] == 'a':
             if self.ends("ational"):
                 self.r("ate")
             elif self.ends("tional"):
                 self.r("tion")
-        elif self.b[self.k - 1] == 'c':
+        elif self.word[self.end - 1] == 'c':
             if self.ends("enci"):
                 self.r("ence")
             elif self.ends("anci"):
                 self.r("ance")
-        elif self.b[self.k - 1] == 'e':
+        elif self.word[self.end - 1] == 'e':
             if self.ends("izer"):      self.r("ize")
-        elif self.b[self.k - 1] == 'l':
+        elif self.word[self.end - 1] == 'l':
             if self.ends("bli"):
                 self.r("ble")  # --DEPARTURE--
             # To match the published algorithm, replace this phrase with
@@ -233,14 +231,14 @@ class PorterStemmer:
                 self.r("e")
             elif self.ends("ousli"):
                 self.r("ous")
-        elif self.b[self.k - 1] == 'o':
+        elif self.word[self.end - 1] == 'o':
             if self.ends("ization"):
                 self.r("ize")
             elif self.ends("ation"):
                 self.r("ate")
             elif self.ends("ator"):
                 self.r("ate")
-        elif self.b[self.k - 1] == 's':
+        elif self.word[self.end - 1] == 's':
             if self.ends("alism"):
                 self.r("al")
             elif self.ends("iveness"):
@@ -249,68 +247,68 @@ class PorterStemmer:
                 self.r("ful")
             elif self.ends("ousness"):
                 self.r("ous")
-        elif self.b[self.k - 1] == 't':
+        elif self.word[self.end - 1] == 't':
             if self.ends("aliti"):
                 self.r("al")
             elif self.ends("iviti"):
                 self.r("ive")
             elif self.ends("biliti"):
                 self.r("ble")
-        elif self.b[self.k - 1] == 'g':  # --DEPARTURE--
+        elif self.word[self.end - 1] == 'g':  # --DEPARTURE--
             if self.ends("logi"):      self.r("log")
         # To match the published algorithm, delete this phrase
 
     def step3(self):
         """step3() dels with -ic-, -full, -ness etc. similar strategy to step2."""
-        if self.b[self.k] == 'e':
+        if self.word[self.end] == 'e':
             if self.ends("icate"):
                 self.r("ic")
             elif self.ends("ative"):
                 self.r("")
             elif self.ends("alize"):
                 self.r("al")
-        elif self.b[self.k] == 'i':
+        elif self.word[self.end] == 'i':
             if self.ends("iciti"):     self.r("ic")
-        elif self.b[self.k] == 'l':
+        elif self.word[self.end] == 'l':
             if self.ends("ical"):
                 self.r("ic")
             elif self.ends("ful"):
                 self.r("")
-        elif self.b[self.k] == 's':
+        elif self.word[self.end] == 's':
             if self.ends("ness"):      self.r("")
 
     def step4(self):
         """step4() takes off -ant, -ence etc., in context <c>vcvc<v>."""
-        if self.b[self.k - 1] == 'a':
+        if self.word[self.end - 1] == 'a':
             if self.ends("al"):
                 pass
             else:
                 return
-        elif self.b[self.k - 1] == 'c':
+        elif self.word[self.end - 1] == 'c':
             if self.ends("ance"):
                 pass
             elif self.ends("ence"):
                 pass
             else:
                 return
-        elif self.b[self.k - 1] == 'e':
+        elif self.word[self.end - 1] == 'e':
             if self.ends("er"):
                 pass
             else:
                 return
-        elif self.b[self.k - 1] == 'i':
+        elif self.word[self.end - 1] == 'i':
             if self.ends("ic"):
                 pass
             else:
                 return
-        elif self.b[self.k - 1] == 'l':
+        elif self.word[self.end - 1] == 'l':
             if self.ends("able"):
                 pass
             elif self.ends("ible"):
                 pass
             else:
                 return
-        elif self.b[self.k - 1] == 'n':
+        elif self.word[self.end - 1] == 'n':
             if self.ends("ant"):
                 pass
             elif self.ends("ement"):
@@ -321,37 +319,37 @@ class PorterStemmer:
                 pass
             else:
                 return
-        elif self.b[self.k - 1] == 'o':
-            if self.ends("ion") and (self.b[self.j] == 's' or self.b[self.j] == 't'):
+        elif self.word[self.end - 1] == 'o':
+            if self.ends("ion") and (self.word[self.offset] == 's' or self.word[self.offset] == 't'):
                 pass
             elif self.ends("ou"):
                 pass
             # takes care of -ous
             else:
                 return
-        elif self.b[self.k - 1] == 's':
+        elif self.word[self.end - 1] == 's':
             if self.ends("ism"):
                 pass
             else:
                 return
-        elif self.b[self.k - 1] == 't':
+        elif self.word[self.end - 1] == 't':
             if self.ends("ate"):
                 pass
             elif self.ends("iti"):
                 pass
             else:
                 return
-        elif self.b[self.k - 1] == 'u':
+        elif self.word[self.end - 1] == 'u':
             if self.ends("ous"):
                 pass
             else:
                 return
-        elif self.b[self.k - 1] == 'v':
+        elif self.word[self.end - 1] == 'v':
             if self.ends("ive"):
                 pass
             else:
                 return
-        elif self.b[self.k - 1] == 'z':
+        elif self.word[self.end - 1] == 'z':
             if self.ends("ize"):
                 pass
             else:
@@ -359,29 +357,21 @@ class PorterStemmer:
         else:
             return
         if self.m() > 1:
-            self.k = self.j
+            self.end = self.offset
 
     def step5(self):
         """step5() removes a final -e if m() > 1, and changes -ll to -l if
         m() > 1.
         """
-        self.j = self.k
-        if self.b[self.k] == 'e':
+        self.offset = self.end
+        if self.word[self.end] == 'e':
             a = self.m()
-            if a > 1 or (a == 1 and not self.is_of_form_cvc(self.k - 1)):
-                self.k = self.k - 1
-        if self.b[self.k] == 'l' and self.contains_double_consonant(self.k) and self.m() > 1:
-            self.k = self.k - 1
+            if a > 1 or (a == 1 and not self.is_of_form_cvc(self.end - 1)):
+                self.end = self.end - 1
+        if self.word[self.end] == 'l' and self.contains_double_consonant(self.end) and self.m() > 1:
+            self.end = self.end - 1
 
     def stem_document(self, document):
-        """In stem(p,i,j), p is a char pointer, and the string to be stemmed
-        is from p[i] to p[j] inclusive. Typically i is zero and j is the
-        offset to the last character of a string, (p[j+1] == '\0'). The
-        stemmer adjusts the characters p[i] ... p[j] and returns the new
-        end-point of the string, k. Stemming never increases word length, so
-        i <= k <= j. To turn the stemmer into a module, declare 'stem' as
-        extern, and delete the remainder of this file.
-        """
         result = []
         for line in document.split('\n'):
             result.append(self.stem_sentence(line))
@@ -394,9 +384,9 @@ class PorterStemmer:
         return ' '.join(result)
 
     def stem_word(self, word):
-        self.b = word
-        self.k = len(word) - 1
-        self.k0 = 0
+        self.word = word
+        self.end = len(word) - 1
+        self.start = 0
 
         self.remove_plurals()
         self.terminal_y_to_i()
@@ -404,7 +394,7 @@ class PorterStemmer:
         self.step3()
         self.step4()
         self.step5()
-        return self.b[self.k0: self.k + 1]
+        return self.word[self.start: self.end + 1]
 
 
 if __name__ == '__main__':
