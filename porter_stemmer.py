@@ -340,10 +340,13 @@ class PorterStemmer:
             result.append(self.stem_sentence(line))
         return '\n'.join(result)
 
+    def alphabetic(self, word):
+        return ''.join([letter if letter.isalpha() else '' for letter in word])
+
     def stem_sentence(self, sentence):
         result = []
         for word in sentence.split():
-            result.append(self.stem_word(word))
+            result.append(self.stem_word(self.alphabetic(word)))
         return ' '.join(result)
 
     def stem_word(self, word):
@@ -362,6 +365,6 @@ class PorterStemmer:
 
 if __name__ == '__main__':
     stemmer = PorterStemmer()
-    resume = open('resume.txt', 'r').read()
-    # print(stemmer.stem_sentence('The quick brown fox jumps over the lazy dog'))
+    resume = open('do-not-go-gentle-into-that-good-night.txt', 'r').read()
+    # print(stemmer.stem_sentence('so many cats and dogs'))
     print(stemmer.stem_document(resume))
