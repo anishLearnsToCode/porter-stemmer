@@ -104,7 +104,7 @@ class PorterStemmer:
         return False
 
     def contains_double_consonant(self, j):
-        """doublec(j) is TRUE <=> j,(j-1) contain a double consonant."""
+        """:returns TRUE if the word contain a double consonant in the range [offset, start]"""
         if j < (self.start + 1):
             return 0
         if (self.word[j] != self.word[j - 1]):
@@ -112,7 +112,7 @@ class PorterStemmer:
         return self.is_consonant(j)
 
     def is_of_form_cvc(self, i):
-        """cvc(i) is TRUE <=> i-2,i-1,i has the form consonant - vowel - consonant
+        """:returns TRUE for indices set {i-2, i-1, i} has the form consonant - vowel - consonant
         and also if the second c is not w,x or y. this is used when trying to
         restore an e at the end of a short  e.g.
 
@@ -126,8 +126,8 @@ class PorterStemmer:
             return 0
         return 1
 
-    def ends(self, s):
-        """ends(s) is TRUE <=> k0,...k ends with the string s."""
+    def ends_with(self, s):
+        """:returns TRUE when {start...end} ends with the string s."""
         length = len(s)
         if s[length - 1] != self.word[self.end]:  # tiny speed-up
             return 0
@@ -139,13 +139,13 @@ class PorterStemmer:
         return 1
 
     def set_to(self, s):
-        """setto(s) sets (j+1),...k to the characters in the string s, readjusting k."""
+        """sets [offset + 1, end] to the characters in the string s, readjusting end."""
         length = len(s)
         self.word = self.word[:self.offset + 1] + s + self.word[self.offset + length + 1:]
         self.end = self.offset + length
 
-    def r(self, s):
-        """r(s) is used further down. is a mapping function to change morphemes"""
+    def replace_morpheme(self, s):
+        """is a mapping function to change morphemes"""
         if self.m() > 0:
             self.set_to(s)
 
@@ -171,22 +171,22 @@ class PorterStemmer:
            meetings  ->  meet
         """
         if self.word[self.end] == 's':
-            if self.ends("sses"):
+            if self.ends_with("sses"):
                 self.end = self.end - 2
-            elif self.ends("ies"):
+            elif self.ends_with("ies"):
                 self.set_to("i")
             elif self.word[self.end - 1] != 's':
                 self.end = self.end - 1
-        if self.ends("eed"):
+        if self.ends_with("eed"):
             if self.m() > 0:
                 self.end = self.end - 1
-        elif (self.ends("ed") or self.ends("ing")) and self.contains_vowel():
+        elif (self.ends_with("ed") or self.ends_with("ing")) and self.contains_vowel():
             self.end = self.offset
-            if self.ends("at"):
+            if self.ends_with("at"):
                 self.set_to("ate")
-            elif self.ends("bl"):
+            elif self.ends_with("bl"):
                 self.set_to("ble")
-            elif self.ends("iz"):
+            elif self.ends_with("iz"):
                 self.set_to("ize")
             elif self.contains_double_consonant(self.end):
                 self.end = self.end - 1
@@ -198,7 +198,7 @@ class PorterStemmer:
 
     def terminal_y_to_i(self):
         """step1c() turns terminal y to i when there is another vowel in the stem."""
-        if self.ends('y') and self.contains_vowel():
+        if self.ends_with('y') and self.contains_vowel():
             self.word = self.word[:self.end] + 'i' + self.word[self.end + 1:]
 
     def map_double_to_single_suffix(self):
@@ -207,150 +207,150 @@ class PorterStemmer:
         string before the suffix must give m() > 0.
         """
         if self.word[self.end - 1] == 'a':
-            if self.ends("ational"):
-                self.r("ate")
-            elif self.ends("tional"):
-                self.r("tion")
+            if self.ends_with("ational"):
+                self.replace_morpheme("ate")
+            elif self.ends_with("tional"):
+                self.replace_morpheme("tion")
         elif self.word[self.end - 1] == 'c':
-            if self.ends("enci"):
-                self.r("ence")
-            elif self.ends("anci"):
-                self.r("ance")
+            if self.ends_with("enci"):
+                self.replace_morpheme("ence")
+            elif self.ends_with("anci"):
+                self.replace_morpheme("ance")
         elif self.word[self.end - 1] == 'e':
-            if self.ends("izer"):      self.r("ize")
+            if self.ends_with("izer"):      self.replace_morpheme("ize")
         elif self.word[self.end - 1] == 'l':
-            if self.ends("bli"):
-                self.r("ble")  # --DEPARTURE--
+            if self.ends_with("bli"):
+                self.replace_morpheme("ble")  # --DEPARTURE--
             # To match the published algorithm, replace this phrase with
             #   if self.ends("abli"):      self.r("able")
-            elif self.ends("alli"):
-                self.r("al")
-            elif self.ends("entli"):
-                self.r("ent")
-            elif self.ends("eli"):
-                self.r("e")
-            elif self.ends("ousli"):
-                self.r("ous")
+            elif self.ends_with("alli"):
+                self.replace_morpheme("al")
+            elif self.ends_with("entli"):
+                self.replace_morpheme("ent")
+            elif self.ends_with("eli"):
+                self.replace_morpheme("e")
+            elif self.ends_with("ousli"):
+                self.replace_morpheme("ous")
         elif self.word[self.end - 1] == 'o':
-            if self.ends("ization"):
-                self.r("ize")
-            elif self.ends("ation"):
-                self.r("ate")
-            elif self.ends("ator"):
-                self.r("ate")
+            if self.ends_with("ization"):
+                self.replace_morpheme("ize")
+            elif self.ends_with("ation"):
+                self.replace_morpheme("ate")
+            elif self.ends_with("ator"):
+                self.replace_morpheme("ate")
         elif self.word[self.end - 1] == 's':
-            if self.ends("alism"):
-                self.r("al")
-            elif self.ends("iveness"):
-                self.r("ive")
-            elif self.ends("fulness"):
-                self.r("ful")
-            elif self.ends("ousness"):
-                self.r("ous")
+            if self.ends_with("alism"):
+                self.replace_morpheme("al")
+            elif self.ends_with("iveness"):
+                self.replace_morpheme("ive")
+            elif self.ends_with("fulness"):
+                self.replace_morpheme("ful")
+            elif self.ends_with("ousness"):
+                self.replace_morpheme("ous")
         elif self.word[self.end - 1] == 't':
-            if self.ends("aliti"):
-                self.r("al")
-            elif self.ends("iviti"):
-                self.r("ive")
-            elif self.ends("biliti"):
-                self.r("ble")
+            if self.ends_with("aliti"):
+                self.replace_morpheme("al")
+            elif self.ends_with("iviti"):
+                self.replace_morpheme("ive")
+            elif self.ends_with("biliti"):
+                self.replace_morpheme("ble")
         elif self.word[self.end - 1] == 'g':  # --DEPARTURE--
-            if self.ends("logi"):      self.r("log")
+            if self.ends_with("logi"):      self.replace_morpheme("log")
         # To match the published algorithm, delete this phrase
 
     def step3(self):
         """step3() dels with -ic-, -full, -ness etc. similar strategy to step2."""
         if self.word[self.end] == 'e':
-            if self.ends("icate"):
-                self.r("ic")
-            elif self.ends("ative"):
-                self.r("")
-            elif self.ends("alize"):
-                self.r("al")
+            if self.ends_with("icate"):
+                self.replace_morpheme("ic")
+            elif self.ends_with("ative"):
+                self.replace_morpheme("")
+            elif self.ends_with("alize"):
+                self.replace_morpheme("al")
         elif self.word[self.end] == 'i':
-            if self.ends("iciti"):     self.r("ic")
+            if self.ends_with("iciti"):     self.replace_morpheme("ic")
         elif self.word[self.end] == 'l':
-            if self.ends("ical"):
-                self.r("ic")
-            elif self.ends("ful"):
-                self.r("")
+            if self.ends_with("ical"):
+                self.replace_morpheme("ic")
+            elif self.ends_with("ful"):
+                self.replace_morpheme("")
         elif self.word[self.end] == 's':
-            if self.ends("ness"):      self.r("")
+            if self.ends_with("ness"):      self.replace_morpheme("")
 
     def step4(self):
         """step4() takes off -ant, -ence etc., in context <c>vcvc<v>."""
         if self.word[self.end - 1] == 'a':
-            if self.ends("al"):
+            if self.ends_with("al"):
                 pass
             else:
                 return
         elif self.word[self.end - 1] == 'c':
-            if self.ends("ance"):
+            if self.ends_with("ance"):
                 pass
-            elif self.ends("ence"):
+            elif self.ends_with("ence"):
                 pass
             else:
                 return
         elif self.word[self.end - 1] == 'e':
-            if self.ends("er"):
+            if self.ends_with("er"):
                 pass
             else:
                 return
         elif self.word[self.end - 1] == 'i':
-            if self.ends("ic"):
+            if self.ends_with("ic"):
                 pass
             else:
                 return
         elif self.word[self.end - 1] == 'l':
-            if self.ends("able"):
+            if self.ends_with("able"):
                 pass
-            elif self.ends("ible"):
+            elif self.ends_with("ible"):
                 pass
             else:
                 return
         elif self.word[self.end - 1] == 'n':
-            if self.ends("ant"):
+            if self.ends_with("ant"):
                 pass
-            elif self.ends("ement"):
+            elif self.ends_with("ement"):
                 pass
-            elif self.ends("ment"):
+            elif self.ends_with("ment"):
                 pass
-            elif self.ends("ent"):
+            elif self.ends_with("ent"):
                 pass
             else:
                 return
         elif self.word[self.end - 1] == 'o':
-            if self.ends("ion") and (self.word[self.offset] == 's' or self.word[self.offset] == 't'):
+            if self.ends_with("ion") and (self.word[self.offset] == 's' or self.word[self.offset] == 't'):
                 pass
-            elif self.ends("ou"):
+            elif self.ends_with("ou"):
                 pass
             # takes care of -ous
             else:
                 return
         elif self.word[self.end - 1] == 's':
-            if self.ends("ism"):
+            if self.ends_with("ism"):
                 pass
             else:
                 return
         elif self.word[self.end - 1] == 't':
-            if self.ends("ate"):
+            if self.ends_with("ate"):
                 pass
-            elif self.ends("iti"):
+            elif self.ends_with("iti"):
                 pass
             else:
                 return
         elif self.word[self.end - 1] == 'u':
-            if self.ends("ous"):
+            if self.ends_with("ous"):
                 pass
             else:
                 return
         elif self.word[self.end - 1] == 'v':
-            if self.ends("ive"):
+            if self.ends_with("ive"):
                 pass
             else:
                 return
         elif self.word[self.end - 1] == 'z':
-            if self.ends("ize"):
+            if self.ends_with("ize"):
                 pass
             else:
                 return
