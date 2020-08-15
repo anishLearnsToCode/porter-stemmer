@@ -105,7 +105,7 @@ class PorterStemmer:
                 return 1
         return 0
 
-    def doublec(self, j):
+    def contains_double_consonant(self, j):
         """doublec(j) is TRUE <=> j,(j-1) contain a double consonant."""
         if j < (self.k0 + 1):
             return 0
@@ -113,7 +113,7 @@ class PorterStemmer:
             return 0
         return self.is_consonant(j)
 
-    def cvc(self, i):
+    def is_of_form_cvc(self, i):
         """cvc(i) is TRUE <=> i-2,i-1,i has the form consonant - vowel - consonant
         and also if the second c is not w,x or y. this is used when trying to
         restore an e at the end of a short  e.g.
@@ -135,23 +135,23 @@ class PorterStemmer:
             return 0
         if length > (self.k - self.k0 + 1):
             return 0
-        if self.b[self.k-length+1:self.k+1] != s:
+        if self.b[self.k-length+1 : self.k+1] != s:
             return 0
         self.j = self.k - length
         return 1
 
-    def setto(self, s):
+    def set_to(self, s):
         """setto(s) sets (j+1),...k to the characters in the string s, readjusting k."""
         length = len(s)
         self.b = self.b[:self.j+1] + s + self.b[self.j+length+1:]
         self.k = self.j + length
 
     def r(self, s):
-        """r(s) is used further down."""
+        """r(s) is used further down. is a mapping function to change morphemes"""
         if self.m() > 0:
-            self.setto(s)
+            self.set_to(s)
 
-    def step1ab(self):
+    def remove_plurals(self):
         """step1ab() gets rid of plurals and -ed or -ing. e.g.
 
            caresses  ->  caress
@@ -176,7 +176,7 @@ class PorterStemmer:
             if self.ends("sses"):
                 self.k = self.k - 2
             elif self.ends("ies"):
-                self.setto("i")
+                self.set_to("i")
             elif self.b[self.k - 1] != 's':
                 self.k = self.k - 1
         if self.ends("eed"):
@@ -184,23 +184,23 @@ class PorterStemmer:
                 self.k = self.k - 1
         elif (self.ends("ed") or self.ends("ing")) and self.contains_vowel():
             self.k = self.j
-            if self.ends("at"):   self.setto("ate")
-            elif self.ends("bl"): self.setto("ble")
-            elif self.ends("iz"): self.setto("ize")
-            elif self.doublec(self.k):
+            if self.ends("at"):   self.set_to("ate")
+            elif self.ends("bl"): self.set_to("ble")
+            elif self.ends("iz"): self.set_to("ize")
+            elif self.contains_double_consonant(self.k):
                 self.k = self.k - 1
                 ch = self.b[self.k]
                 if ch == 'l' or ch == 's' or ch == 'z':
                     self.k = self.k + 1
-            elif (self.m() == 1 and self.cvc(self.k)):
-                self.setto("e")
+            elif self.m() == 1 and self.is_of_form_cvc(self.k):
+                self.set_to("e")
 
-    def step1c(self):
+    def terminal_y_to_i(self):
         """step1c() turns terminal y to i when there is another vowel in the stem."""
-        if (self.ends("y") and self.contains_vowel()):
+        if self.ends('y') and self.contains_vowel():
             self.b = self.b[:self.k] + 'i' + self.b[self.k+1:]
 
-    def step2(self):
+    def map_double_to_single_suffix(self):
         """step2() maps double suffices to single ones.
         so -ization ( = -ize plus -ation) maps to -ize etc. note that the
         string before the suffix must give m() > 0.
@@ -310,12 +310,12 @@ class PorterStemmer:
         self.j = self.k
         if self.b[self.k] == 'e':
             a = self.m()
-            if a > 1 or (a == 1 and not self.cvc(self.k-1)):
+            if a > 1 or (a == 1 and not self.is_of_form_cvc(self.k - 1)):
                 self.k = self.k - 1
-        if self.b[self.k] == 'l' and self.doublec(self.k) and self.m() > 1:
+        if self.b[self.k] == 'l' and self.contains_double_consonant(self.k) and self.m() > 1:
             self.k = self.k -1
 
-    def stem(self, p, i, j):
+    def stem(self, document):
         """In stem(p,i,j), p is a char pointer, and the string to be stemmed
         is from p[i] to p[j] inclusive. Typically i is zero and j is the
         offset to the last character of a string, (p[j+1] == '\0'). The
@@ -325,9 +325,9 @@ class PorterStemmer:
         extern, and delete the remainder of this file.
         """
         # copy the parameters into statics
-        self.b = p
-        self.k = j
-        self.k0 = i
+        self.b = document
+        self.k = len(document) - 1
+        self.k0 = 0
         if self.k <= self.k0 + 1:
             return self.b # --DEPARTURE--
 
@@ -336,18 +336,19 @@ class PorterStemmer:
         # published algorithm. Remove the line to match the published
         # algorithm.
 
-        self.step1ab()
-        self.step1c()
-        self.step2()
+        self.remove_plurals()
+        self.terminal_y_to_i()
+        self.map_double_to_single_suffix()
         self.step3()
         self.step4()
         self.step5()
-        return self.b[self.k0:self.k+1]
+        return self.b[self.k0 : self.k+1]
 
 
 if __name__ == '__main__':
-    p = PorterStemmer()
+    stemmer = PorterStemmer()
     resume = open('resume.txt', 'r')
+    print(stemmer.stem('dogs'))
 
     while True:
         output = ''
@@ -355,14 +356,14 @@ if __name__ == '__main__':
         line = resume.readline()
         if line == '':
             break
-        for c in line:
-            if c.isalpha():
-                word += c.lower()
+        for character in line:
+            if character.isalpha():
+                word += character.lower()
             else:
                 if word:
-                    output += p.stem(word, 0, len(word)-1)
+                    output += stemmer.stem(word)
                     word = ''
-                output += c.lower()
+                output += character.lower()
         print(output)
 
     resume.close()
