@@ -7,7 +7,7 @@ Information Retrieval systems.
 
 
 Implementation with explanation of the Porter Stemmer algorithm can be seen in this
-[Jupyter Notebook](Porter%20Stemmer%20Algorithm.ipynb).
+[Jupyter Notebook](porter-stemmer-algorithm.ipynb).
 
 ## Running Locally
 Clone this repository from GitHun to your machine and navigate to the directory. Then run the 
