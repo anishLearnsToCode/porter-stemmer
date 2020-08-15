@@ -150,7 +150,7 @@ class PorterStemmer:
             self.set_to(s)
 
     def remove_plurals(self):
-        """step1ab() gets rid of plurals and -ed or -ing. e.g.
+        """This is step 1 ab and gets rid of plurals and -ed or -ing. e.g.
 
            caresses  ->  caress
            ponies    ->  poni
@@ -197,12 +197,12 @@ class PorterStemmer:
                 self.set_to("e")
 
     def terminal_y_to_i(self):
-        """step1c() turns terminal y to i when there is another vowel in the stem."""
+        """This defines step 1 c which turns terminal y to i when there is another vowel in the stem."""
         if self.ends_with('y') and self.contains_vowel():
             self.word = self.word[:self.end] + 'i' + self.word[self.end + 1:]
 
     def map_double_to_single_suffix(self):
-        """step2() maps double suffices to single ones.
+        """Defines step 2 and maps double suffices to single ones.
         so -ization ( = -ize plus -ation) maps to -ize etc. note that the
         string before the suffix must give m() > 0.
         """
@@ -259,7 +259,7 @@ class PorterStemmer:
         # To match the published algorithm, delete this phrase
 
     def step3(self):
-        """step3() dels with -ic-, -full, -ness etc. similar strategy to step2."""
+        """step3() deals with -ic-, -full, -ness etc."""
         if self.word[self.end] == 'e':
             if self.ends_with("icate"):
                 self.replace_morpheme("ic")
@@ -360,9 +360,7 @@ class PorterStemmer:
             self.end = self.offset
 
     def step5(self):
-        """step5() removes a final -e if m() > 1, and changes -ll to -l if
-        m() > 1.
-        """
+        """step5() removes a final -e if m() > 1, and changes -ll to -l if m > 1."""
         self.offset = self.end
         if self.word[self.end] == 'e':
             a = self.m()
@@ -400,5 +398,5 @@ class PorterStemmer:
 if __name__ == '__main__':
     stemmer = PorterStemmer()
     resume = open('resume.txt', 'r').read()
-    # print(stemmer.stem_sentence('important links'))
+    # print(stemmer.stem_sentence('important links dogs cats and bears are wild animated'))
     print(stemmer.stem_document(resume))
