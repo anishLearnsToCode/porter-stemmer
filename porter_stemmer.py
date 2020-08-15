@@ -71,9 +71,9 @@ class PorterStemmer:
     def contains_double_consonant(self, j):
         """:returns TRUE if the word contain a double consonant in the range [offset, start]"""
         if j < (self.start + 1):
-            return 0
-        if (self.word[j] != self.word[j - 1]):
-            return 0
+            return False
+        if self.word[j] != self.word[j - 1]:
+            return False
         return self.is_consonant(j)
 
     def is_of_form_cvc(self, i):
@@ -346,10 +346,13 @@ class PorterStemmer:
     def stem_sentence(self, sentence):
         result = []
         for word in sentence.split():
-            result.append(self.stem_word(self.alphabetic(word)))
+            result.append(self.stem_word(word))
         return ' '.join(result)
 
     def stem_word(self, word):
+        if word == '':
+            return ''
+
         self.word = word
         self.end = len(word) - 1
         self.start = 0
