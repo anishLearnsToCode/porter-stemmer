@@ -95,13 +95,13 @@ class PorterStemmer:
         """:returns TRUE when {start...end} ends with the string s."""
         length = len(s)
         if s[length - 1] != self.word[self.end]:  # tiny speed-up
-            return 0
+            return False
         if length > (self.end - self.start + 1):
-            return 0
+            return False
         if self.word[self.end - length + 1: self.end + 1] != s:
-            return 0
+            return False
         self.offset = self.end - length
-        return 1
+        return True
 
     def set_to(self, s):
         """sets [offset + 1, end] to the characters in the string s, readjusting end."""
@@ -219,9 +219,8 @@ class PorterStemmer:
                 self.replace_morpheme("ive")
             elif self.ends_with("biliti"):
                 self.replace_morpheme("ble")
-        elif self.word[self.end - 1] == 'g':  # --DEPARTURE--
+        elif self.word[self.end - 1] == 'g':
             if self.ends_with("logi"):      self.replace_morpheme("log")
-        # To match the published algorithm, delete this phrase
 
     def step3(self):
         """step3() deals with -ic-, -full, -ness etc."""
