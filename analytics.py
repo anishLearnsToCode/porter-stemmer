@@ -17,7 +17,7 @@ def unique_words(document):
 
 
 stemmer = PorterStemmer()
-resume = open('resume.txt', 'r').read()
+resume = open('assets/resume.txt', 'r').read()
 number_words_resume = number_of_words(resume)
 number_unique_words_in_resume = unique_words(resume)
 number_unique_words_stemmed_resume = unique_words(stemmer.stem_document(resume))
