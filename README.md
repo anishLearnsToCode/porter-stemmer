@@ -1,13 +1,12 @@
 # Porter Stemmer
 
+See implementation on 
+[Jupyter Notebook](porter-stemmer-algorithm.ipynb).
+
 The Porter stemming algorithm (or _Porter stemmer_) is a process for removing the 
 commoner morphological and inflexional endings from words in English. Its main use is 
 as part of a term normalisation process that is usually done when setting up 
 Information Retrieval systems.
-
-
-Implementation with explanation of the Porter Stemmer algorithm can be seen in this
-[Jupyter Notebook](porter-stemmer-algorithm.ipynb).
 
 ## Running Locally
 Clone this repository from GitHun to your machine and navigate to the directory. Then run the 
