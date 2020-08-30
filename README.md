@@ -9,7 +9,7 @@ as part of a term normalisation process that is usually done when setting up
 Information Retrieval systems.
 
 ## Running Locally
-Clone this repository from GitHun to your machine and navigate to the directory. Then run the 
+Clone this repository from GitHub to your machine and navigate to the directory. Then run the 
 driver file which will read the already present `resume.txt` file from directory and print the 
 stemmed output. 
 ```bash
